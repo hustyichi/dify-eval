@@ -44,7 +44,7 @@ def create_dataset(
 
 
 def create_dataset_from_file(
-    file_path: str,
+    file_path: str = os.getenv("LOCAL_FILE_PATH", ""),
     input_column: str = "question",
     output_column: str = "answer",
     metadata_column: str = "metadata",
@@ -52,6 +52,9 @@ def create_dataset_from_file(
     dataset_name: str = os.getenv("DATASET_NAME", ""),
     always_add_dataset_items: bool = False,
 ):
+    if not (file_path and os.path.exists(file_path)):
+        return
+
     dataset_items = extractor.extract(
         file_path, input_column, output_column, metadata_column, encoding
     )
