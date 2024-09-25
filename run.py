@@ -1,7 +1,7 @@
 import asyncio
 
 from dify_eval.dataset import dataset
-from dify_eval.eval import langfuse_eval
+from dify_eval.generation import langfuse_eval
 
 if __name__ == "__main__":
     # upload local file to langfuse dataset
