@@ -12,6 +12,7 @@ python-dotenv = "^1.0.1"
 tenacity = "^9.0.0"
 pandas = "^2.2.3"
 langfuse = "^2.50.3"
+pydantic = "^2.9.2"
 
 [[tool.poetry.source]]
 name = "aliyun-pypi"
