@@ -29,24 +29,27 @@ async def run_dataset_item(item, run_name, semaphore):
         return response
 
 
-def save_results(results: list[dict], local_path: str = ""):
+def save_results(
+    results: list[dict], output_path: str = os.getenv("OUTPUT_FILE_PATH", "")
+):
     data = []
     for result in results:
         data.append(result["answer"].strip())
 
     df = pd.DataFrame(data, columns=["answer"])
 
-    if not local_path:
+    if not output_path:
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_path = f'submit/results_{os.getenv("RUN_NAME", "")}_{current_time}.csv'
+        local_path = f'results/{os.getenv("RUN_NAME", "")}_{current_time}.csv'
 
     df.to_csv(local_path, index=False)
 
 
-async def run_dataset(
+async def run_dataset_generation(
     dataset_name: str = os.getenv("DATASET_NAME", ""),
     run_name: str = os.getenv("RUN_NAME", ""),
     max_concurrency: int = 3,
+    output_path: str = os.getenv("OUTPUT_FILE_PATH", ""),
 ):
 
     if not dataset_name:
@@ -65,13 +68,5 @@ async def run_dataset(
         tasks.append(task)
 
     results = await asyncio.gather(*tasks)
+    save_results(results, output_path)
     return results
-
-
-async def run_dataset_and_save(
-    dataset_name: str = os.getenv("DATASET_NAME", ""),
-    run_name: str = os.getenv("RUN_NAME", ""),
-    max_concurrency: int = 1,
-):
-    results = await run_dataset(dataset_name, run_name, max_concurrency)
-    save_results(results)
