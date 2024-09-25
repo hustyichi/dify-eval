@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "dify-eval"
+version = "0.1.0"
+description = ""
+authors = ["libing <libing@healink.cn>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiohttp = "^3.10.6"
+python-dotenv = "^1.0.1"
+tenacity = "^9.0.0"
+pandas = "^2.2.3"
+
+[[tool.poetry.source]]
+name = "aliyun-pypi"
+url = "https://mirrors.aliyun.com/pypi/simple"
+priority = "primary"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
