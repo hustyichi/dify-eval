@@ -15,7 +15,7 @@ async def send_chat_message(
     url: str = os.getenv("DIFY_API_BASE", ""),
     api_key: str = os.getenv("DIFY_API_KEY", ""),
     response_mode: Literal["streaming", "blocking"] = "blocking",
-    user: str = "auto_test",
+    user: str = os.getenv("RUN_NAME", "auto_test_user"),
     file_array: list = [],
 ):
     if not (url and api_key):
