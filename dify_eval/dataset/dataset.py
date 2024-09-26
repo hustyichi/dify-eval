@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from langfuse import Langfuse
+from loguru import logger
 
 from dify_eval.dataset.extractor import extractor
 from dify_eval.dataset.model import DatasetItem
@@ -36,11 +37,22 @@ def create_dataset(
 
     try:
         langfuse.get_dataset(dataset_name)
+        logger.info(f"Dataset {dataset_name} already exists")
         if always_add_dataset_items:
+            logger.info(
+                f"Adding dataset items when dataset {dataset_name} already exists"
+            )
             create_dataset_items(dataset_name, dataset_items)
+            logger.info(
+                f"Insert {len(dataset_items) if dataset_items else 0} dataset items to dataset {dataset_name}"
+            )
     except Exception:
+        logger.info(f"Dataset {dataset_name} not exist, create new one")
         langfuse.create_dataset(name=dataset_name)
         create_dataset_items(dataset_name, dataset_items)
+        logger.info(
+            f"Insert {len(dataset_items) if dataset_items else 0} dataset items to dataset {dataset_name}"
+        )
 
 
 def create_dataset_from_file(

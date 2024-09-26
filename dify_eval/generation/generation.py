@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 from dotenv import load_dotenv
 from langfuse import Langfuse
+from loguru import logger
 
 from dify_eval.generation.dify_chat import send_chat_message
 
@@ -47,6 +48,7 @@ def save_results(
     if not os.path.exists(parent_folder):
         os.makedirs(parent_folder)
 
+    logger.info(f"Save results to {local_path}")
     df.to_csv(local_path, index=False)
 
 
@@ -64,6 +66,7 @@ async def run_dataset_generation(
         run_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     dataset = get_langfuse_dataset(dataset_name)
+    logger.info(f"Submit to dify {len(dataset)} items in dataset {dataset_name}")
     semaphore = asyncio.Semaphore(max_concurrency)
     tasks = []
     input_data = []
