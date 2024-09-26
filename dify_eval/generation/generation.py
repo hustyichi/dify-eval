@@ -4,8 +4,9 @@ from datetime import datetime
 
 import pandas as pd
 from dotenv import load_dotenv
-from generation.dify_chat import send_chat_message
 from langfuse import Langfuse
+
+from dify_eval.generation.dify_chat import send_chat_message
 
 load_dotenv()
 
