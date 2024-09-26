@@ -104,7 +104,7 @@ def do_trace_evaluate(
     )
 
     logger.debug(
-        f"Trace {trace.id} with question {trace.input} evaluation result: {result}"
+        f"Trace {trace.id} with question {trace.input.get(QUERY_KEY, trace.input)} evaluation result: {result}"
     )
 
     for metric_type, metric_score in result.items():
