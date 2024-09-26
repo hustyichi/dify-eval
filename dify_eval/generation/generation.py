@@ -66,7 +66,7 @@ async def run_dataset_generation(
         run_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     dataset = get_langfuse_dataset(dataset_name)
-    logger.info(f"Submit to dify {len(dataset)} items in dataset {dataset_name}")
+    logger.info(f"Submit to dify {len(dataset.items)} items in dataset {dataset_name}")
     semaphore = asyncio.Semaphore(max_concurrency)
     tasks = []
     input_data = []
