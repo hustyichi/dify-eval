@@ -43,6 +43,10 @@ def save_results(
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         local_path = f'results/{os.getenv("RUN_NAME", "")}_{current_time}.csv'
 
+    parent_folder = os.path.dirname(local_path)
+    if not os.path.exists(parent_folder):
+        os.makedirs(parent_folder)
+
     df.to_csv(local_path, index=False)
 
 
