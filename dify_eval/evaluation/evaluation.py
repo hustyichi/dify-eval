@@ -3,7 +3,7 @@ import os
 from datasets import Dataset
 from dotenv import load_dotenv
 from langfuse import Langfuse
-from langfuse.client import FetchTracesResponse, TraceWithDetails
+from langfuse.client import ObservationsView, TraceWithDetails
 from loguru import logger
 from ragas import evaluate
 from ragas.embeddings import LangchainEmbeddingsWrapper
@@ -31,17 +31,61 @@ def get_run_traces(
     return langfuse.fetch_traces(user_id=user_id, page=page, limit=limit).data
 
 
+def get_trace_observations(trace_id: str) -> list[ObservationsView]:
+    return langfuse.fetch_observations(trace_id=trace_id).data
+
+
+def identify_knowledge_retrieval(observation: ObservationsView) -> bool:
+    KNOWLEDGE_RETRIEVAL_NAME = "knowledge-retrieval"
+
+    if observation.name == KNOWLEDGE_RETRIEVAL_NAME:
+        return True
+    else:
+        return False
+
+
+def get_knowledge_retrieval_observations(trace_id: str) -> list[ObservationsView]:
+    observations = get_trace_observations(trace_id)
+    return [obs for obs in observations if identify_knowledge_retrieval(obs)]
+
+
+def get_knowledge_retrieval_content(observation: ObservationsView) -> list[str]:
+    RESULT_KEY = "result"
+
+    result = observation.output.get(RESULT_KEY, [])
+    return [item["content"] for item in result if item.get("content")]
+
+
 def do_trace_evaluate(
     trace: TraceWithDetails,
     llm: LangchainLLMWrapper,
     embedding_model: LangchainEmbeddingsWrapper,
 ):
+    QUERY_KEY = "sys.query"
+    ANSWER_KEY = "answer"
 
-    # TODO: get context from trace
+    knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
+    logger.info(
+        f"Trace {trace.id} got {len(knowledge_retrieval_observations)} knowledge retrievals"
+    )
+    if not knowledge_retrieval_observations:
+        logger.warning(
+            f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} has no knowledge retrievals, skip evaluation"
+        )
+        return
+
+    # get the last knowledge retrieval content
+    trace_knowlege_retrieval_content = get_knowledge_retrieval_content(
+        knowledge_retrieval_observations[-1]
+    )
+    logger.info(
+        f"Trace {trace.id} got {len(trace_knowlege_retrieval_content)} contexts"
+    )
+
     data_sample = {
-        "question": [trace.input],
-        "answer": [trace.output],
-        "contexts": [],
+        "question": [trace.input.get(QUERY_KEY, trace.input)],
+        "answer": [trace.output.get(ANSWER_KEY, trace.output)],
+        "contexts": [trace_knowlege_retrieval_content],
         "ground_truth": [],
     }
     dataset = Dataset.from_dict(data_sample)
