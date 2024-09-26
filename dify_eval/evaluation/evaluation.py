@@ -25,10 +25,10 @@ langfuse = Langfuse()
 
 def get_run_traces(
     user_id: str = os.getenv("RUN_NAME", "auto_test_user"),
-    page: int = 0,
+    page: int = 1,
     limit: int = constants.BATCH_SIZE,
-) -> FetchTracesResponse:
-    return langfuse.fetch_traces(user_id=user_id, page=page, limit=limit)
+) -> list[TraceWithDetails]:
+    return langfuse.fetch_traces(user_id=user_id, page=page, limit=limit).data
 
 
 def do_trace_evaluate(
@@ -73,7 +73,7 @@ def do_trace_evaluate(
 
 def do_evaluate(
     user_id: str = os.getenv("RUN_NAME", "auto_test_user"),
-    page: int = 0,
+    page: int = 1,
     limit: int = constants.BATCH_SIZE,
     llm: LangchainLLMWrapper = None,
     embedding_model: LangchainEmbeddingsWrapper = None,
@@ -90,7 +90,7 @@ def do_evaluate(
 
 def evaluate_dataset_run_items(user_id: str = os.getenv("RUN_NAME", "auto_test_user")):
     llm, embedding = ragas_models.get_ragas_llm_and_embeddings()
-    page = 0
+    page = 1
     while True:
         count = do_evaluate(user_id, page, constants.BATCH_SIZE, llm, embedding)
         page += 1
