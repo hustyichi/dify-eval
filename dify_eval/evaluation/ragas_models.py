@@ -1,9 +1,12 @@
 import os
 
+from dotenv import load_dotenv
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
 from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.llms import LangchainLLMWrapper
+
+load_dotenv()
 
 
 def get_ragas_llm_and_embeddings():
