@@ -4,6 +4,7 @@ from datasets import Dataset
 from dotenv import load_dotenv
 from langfuse import Langfuse
 from langfuse.client import FetchTracesResponse, TraceWithDetails
+from loguru import logger
 from ragas import evaluate
 from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.llms import LangchainLLMWrapper
@@ -58,6 +59,10 @@ def do_trace_evaluate(
         embeddings=embedding_model,
     )
 
+    logger.debug(
+        f"Trace {trace.id} with question {trace.input} evaluation result: {result}"
+    )
+
     for metric_type, metric_score in result.items():
         langfuse.score(
             trace_id=trace.id,
@@ -74,6 +79,8 @@ def do_evaluate(
     embedding_model: LangchainEmbeddingsWrapper = None,
 ):
     traces = get_run_traces(user_id=user_id, page=page, limit=limit)
+
+    logger.info(f"Current {page} page, {len(traces)} traces found, start evaluating...")
 
     for idx in range(len(traces)):
         do_trace_evaluate(traces[idx], llm, embedding_model)
