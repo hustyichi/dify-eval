@@ -68,7 +68,7 @@ def raw_ragas_evaluate(
     )
 
     logger.info(
-        f"Finish trace {trace_id} with question {dataset_dict['question']} evaluation result: {result}"
+        f" >> Finish trace {trace_id} with question {dataset_dict['question']} evaluation result: {result}"
     )
 
     if trace_id:
@@ -90,7 +90,7 @@ def do_trace_evaluate(
     ANSWER_KEY = "answer"
 
     logger.info(
-        f"Start evaluate trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)}"
+        f" >> Start evaluate trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)}"
     )
     knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
     logger.debug(
@@ -142,7 +142,9 @@ def do_evaluate(
 ):
     traces = get_run_traces(user_id=run_name, page=page, limit=limit)
 
-    logger.info(f"Current {page} page, {len(traces)} traces found, start evaluating...")
+    logger.info(
+        f"Page {page} with limit {limit}, {len(traces)} traces found, start evaluating..."
+    )
 
     for idx in range(len(traces)):
         do_trace_evaluate(traces[idx], ground_truth_map)
@@ -168,7 +170,7 @@ def evaluate_dataset_run_items(
     dataset_name: str = os.getenv("DATASET_NAME", ""),
 ):
     ground_truth_map = get_ground_truth_map(dataset_name)
-    logger.info(f"Evaluate {dataset_name} got {len(ground_truth_map)} expected output")
+    logger.debug(f"Evaluate {dataset_name} got {len(ground_truth_map)} expected output")
 
     page = 1
     while True:
@@ -176,3 +178,5 @@ def evaluate_dataset_run_items(
         page += 1
         if count < constants.BATCH_SIZE:
             break
+
+    logger.info(f"Finish evaluate dataset {dataset_name}")
