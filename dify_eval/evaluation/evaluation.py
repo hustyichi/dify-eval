@@ -67,8 +67,8 @@ def raw_ragas_evaluate(
         embeddings=embedding_model,
     )
 
-    logger.debug(
-        f"Trace {trace_id} with question {dataset_dict['question']} evaluation result: {result}"
+    logger.info(
+        f"Finish trace {trace_id} with question {dataset_dict['question']} evaluation result: {result}"
     )
 
     if trace_id:
@@ -89,9 +89,12 @@ def do_trace_evaluate(
     QUERY_KEY = "sys.query"
     ANSWER_KEY = "answer"
 
-    knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
     logger.info(
-        f"Trace {trace.id} got {len(knowledge_retrieval_observations)} knowledge retrievals"
+        f"Start evaluate trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)}"
+    )
+    knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
+    logger.debug(
+        f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} got {len(knowledge_retrieval_observations)} knowledge retrievals"
     )
     if not knowledge_retrieval_observations:
         logger.warning(
@@ -103,7 +106,7 @@ def do_trace_evaluate(
     trace_knowlege_retrieval_content = get_knowledge_retrieval_content(
         knowledge_retrieval_observations[-1]
     )
-    logger.info(
+    logger.debug(
         f"Trace {trace.id} got {len(trace_knowlege_retrieval_content)} contexts"
     )
 
@@ -123,7 +126,12 @@ def do_trace_evaluate(
         context_precision,
     ]
 
-    raw_ragas_evaluate(data_sample, metrics, trace.id)
+    try:
+        raw_ragas_evaluate(data_sample, metrics, trace.id)
+    except Exception as e:
+        logger.exception(
+            f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} evaluate got error: {e}"
+        )
 
 
 def do_evaluate(
