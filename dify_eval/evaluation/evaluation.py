@@ -84,6 +84,7 @@ def raw_ragas_evaluate(
 
 def do_trace_evaluate(
     trace: TraceWithDetails,
+    ground_truth_map: dict = {},
 ):
     QUERY_KEY = "sys.query"
     ANSWER_KEY = "answer"
@@ -110,7 +111,9 @@ def do_trace_evaluate(
         "question": [trace.input.get(QUERY_KEY, trace.input)],
         "answer": [trace.output.get(ANSWER_KEY, trace.output)],
         "contexts": [trace_knowlege_retrieval_content],
-        "ground_truth": [],
+        "ground_truth": [
+            ground_truth_map.get(trace.input.get(QUERY_KEY, trace.input), "")
+        ],
     }
     metrics = [
         faithfulness,
@@ -127,21 +130,41 @@ def do_evaluate(
     run_name: str = os.getenv("RUN_NAME", "auto_test_user"),
     page: int = 1,
     limit: int = constants.BATCH_SIZE,
+    ground_truth_map: dict = {},
 ):
     traces = get_run_traces(user_id=run_name, page=page, limit=limit)
 
     logger.info(f"Current {page} page, {len(traces)} traces found, start evaluating...")
 
     for idx in range(len(traces)):
-        do_trace_evaluate(traces[idx])
+        do_trace_evaluate(traces[idx], ground_truth_map)
 
     return len(traces)
 
 
-def evaluate_dataset_run_items(run_name: str = os.getenv("RUN_NAME", "auto_test_user")):
+def get_ground_truth_map(dataset_name: str = os.getenv("DATASET_NAME", "")):
+    dataset = langfuse.get_dataset(dataset_name)
+    ground_truth_map = {}
+
+    for item in dataset.items:
+        if not (item.expected_output and item.input):
+            continue
+
+        ground_truth_map[item.input] = item.expected_output
+
+    return ground_truth_map
+
+
+def evaluate_dataset_run_items(
+    run_name: str = os.getenv("RUN_NAME", "auto_test_user"),
+    dataset_name: str = os.getenv("DATASET_NAME", ""),
+):
+    ground_truth_map = get_ground_truth_map(dataset_name)
+    logger.info(f"Evaluate {dataset_name} got {len(ground_truth_map)} expected output")
+
     page = 1
     while True:
-        count = do_evaluate(run_name, page, constants.BATCH_SIZE)
+        count = do_evaluate(run_name, page, constants.BATCH_SIZE, ground_truth_map)
         page += 1
         if count < constants.BATCH_SIZE:
             break
