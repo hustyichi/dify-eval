@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from datasets import Dataset
 from dotenv import load_dotenv
@@ -54,13 +55,38 @@ def get_knowledge_retrieval_content(observation: ObservationsView) -> list[str]:
     return [item["content"] for item in result if item.get("content")]
 
 
+def raw_ragas_evaluate(
+    dataset_dict: dict, metrics: list, trace_id: Optional[str] = None
+):
+    llm, embedding_model = ragas_models.get_ragas_llm_and_embeddings()
+    dataset = Dataset.from_dict(dataset_dict)
+    result = evaluate(
+        dataset,
+        metrics=metrics,
+        llm=llm,
+        embeddings=embedding_model,
+    )
+
+    logger.debug(
+        f"Trace {trace_id} with question {dataset_dict['question']} evaluation result: {result}"
+    )
+
+    if trace_id:
+        for metric_type, metric_score in result.items():
+            langfuse.score(
+                trace_id=trace_id,
+                name=metric_type,
+                value=metric_score,
+            )
+
+    return result
+
+
 def do_trace_evaluate(
     trace: TraceWithDetails,
 ):
     QUERY_KEY = "sys.query"
     ANSWER_KEY = "answer"
-
-    llm, embedding_model = ragas_models.get_ragas_llm_and_embeddings()
 
     knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
     logger.info(
@@ -86,31 +112,15 @@ def do_trace_evaluate(
         "contexts": [trace_knowlege_retrieval_content],
         "ground_truth": [],
     }
-    dataset = Dataset.from_dict(data_sample)
+    metrics = [
+        faithfulness,
+        answer_relevancy,
+        answer_correctness,
+        context_recall,
+        context_precision,
+    ]
 
-    result = evaluate(
-        dataset,
-        metrics=[
-            faithfulness,
-            answer_relevancy,
-            answer_correctness,
-            context_recall,
-            context_precision,
-        ],
-        llm=llm,
-        embeddings=embedding_model,
-    )
-
-    logger.debug(
-        f"Trace {trace.id} with question {trace.input.get(QUERY_KEY, trace.input)} evaluation result: {result}"
-    )
-
-    for metric_type, metric_score in result.items():
-        langfuse.score(
-            trace_id=trace.id,
-            name=metric_type,
-            value=metric_score,
-        )
+    raw_ragas_evaluate(data_sample, metrics, trace.id)
 
 
 def do_evaluate(
