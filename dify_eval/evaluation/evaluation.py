@@ -124,11 +124,11 @@ def do_trace_evaluate(
 
 
 def do_evaluate(
-    user_id: str = os.getenv("RUN_NAME", "auto_test_user"),
+    run_name: str = os.getenv("RUN_NAME", "auto_test_user"),
     page: int = 1,
     limit: int = constants.BATCH_SIZE,
 ):
-    traces = get_run_traces(user_id=user_id, page=page, limit=limit)
+    traces = get_run_traces(user_id=run_name, page=page, limit=limit)
 
     logger.info(f"Current {page} page, {len(traces)} traces found, start evaluating...")
 
@@ -138,10 +138,10 @@ def do_evaluate(
     return len(traces)
 
 
-def evaluate_dataset_run_items(user_id: str = os.getenv("RUN_NAME", "auto_test_user")):
+def evaluate_dataset_run_items(run_name: str = os.getenv("RUN_NAME", "auto_test_user")):
     page = 1
     while True:
-        count = do_evaluate(user_id, page, constants.BATCH_SIZE)
+        count = do_evaluate(run_name, page, constants.BATCH_SIZE)
         page += 1
         if count < constants.BATCH_SIZE:
             break
