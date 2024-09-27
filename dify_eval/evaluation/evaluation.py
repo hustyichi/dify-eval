@@ -83,6 +83,7 @@ def raw_ragas_evaluate(
 
 
 def do_trace_evaluate(
+    metrics,
     trace: TraceWithDetails,
     ground_truth_map: dict = {},
 ):
@@ -118,13 +119,6 @@ def do_trace_evaluate(
             ground_truth_map.get(trace.input.get(QUERY_KEY, trace.input), "")
         ],
     }
-    metrics = [
-        faithfulness,
-        answer_relevancy,
-        answer_correctness,
-        context_recall,
-        context_precision,
-    ]
 
     try:
         raw_ragas_evaluate(data_sample, metrics, trace.id)
@@ -135,6 +129,7 @@ def do_trace_evaluate(
 
 
 def do_evaluate(
+    metrics: list,
     run_name: str = os.getenv("RUN_NAME", "auto_test_user"),
     page: int = 1,
     limit: int = constants.BATCH_SIZE,
@@ -147,7 +142,7 @@ def do_evaluate(
     )
 
     for idx in range(len(traces)):
-        do_trace_evaluate(traces[idx], ground_truth_map)
+        do_trace_evaluate(metrics, traces[idx], ground_truth_map)
 
     return len(traces)
 
@@ -166,6 +161,7 @@ def get_ground_truth_map(dataset_name: str = os.getenv("DATASET_NAME", "")):
 
 
 def evaluate_dataset_run_items(
+    metrics: list,
     run_name: str = os.getenv("RUN_NAME", "auto_test_user"),
     dataset_name: str = os.getenv("DATASET_NAME", ""),
 ):
@@ -174,7 +170,9 @@ def evaluate_dataset_run_items(
 
     page = 1
     while True:
-        count = do_evaluate(run_name, page, constants.BATCH_SIZE, ground_truth_map)
+        count = do_evaluate(
+            metrics, run_name, page, constants.BATCH_SIZE, ground_truth_map
+        )
         page += 1
         if count < constants.BATCH_SIZE:
             break
