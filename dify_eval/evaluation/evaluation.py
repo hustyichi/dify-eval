@@ -6,8 +6,6 @@ from langfuse import Langfuse
 from langfuse.client import ObservationsView, TraceWithDetails
 from loguru import logger
 from ragas import evaluate
-from ragas.embeddings import LangchainEmbeddingsWrapper
-from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import (
     answer_correctness,
     answer_relevancy,
@@ -58,11 +56,11 @@ def get_knowledge_retrieval_content(observation: ObservationsView) -> list[str]:
 
 def do_trace_evaluate(
     trace: TraceWithDetails,
-    llm: LangchainLLMWrapper,
-    embedding_model: LangchainEmbeddingsWrapper,
 ):
     QUERY_KEY = "sys.query"
     ANSWER_KEY = "answer"
+
+    llm, embedding_model = ragas_models.get_ragas_llm_and_embeddings()
 
     knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
     logger.info(
@@ -119,24 +117,21 @@ def do_evaluate(
     user_id: str = os.getenv("RUN_NAME", "auto_test_user"),
     page: int = 1,
     limit: int = constants.BATCH_SIZE,
-    llm: LangchainLLMWrapper = None,
-    embedding_model: LangchainEmbeddingsWrapper = None,
 ):
     traces = get_run_traces(user_id=user_id, page=page, limit=limit)
 
     logger.info(f"Current {page} page, {len(traces)} traces found, start evaluating...")
 
     for idx in range(len(traces)):
-        do_trace_evaluate(traces[idx], llm, embedding_model)
+        do_trace_evaluate(traces[idx])
 
     return len(traces)
 
 
 def evaluate_dataset_run_items(user_id: str = os.getenv("RUN_NAME", "auto_test_user")):
-    llm, embedding = ragas_models.get_ragas_llm_and_embeddings()
     page = 1
     while True:
-        count = do_evaluate(user_id, page, constants.BATCH_SIZE, llm, embedding)
+        count = do_evaluate(user_id, page, constants.BATCH_SIZE)
         page += 1
         if count < constants.BATCH_SIZE:
             break
