@@ -2571,6 +2571,30 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun-pypi"
 
 [[package]]
+name = "xinference-client"
+version = "0.15.2"
+description = "Client for Xinference"
+optional = false
+python-versions = "*"
+files = [
+    {file = "xinference-client-0.15.2.tar.gz", hash = "sha256:5c2259bb133148d1cc9bd2b8ec6eb8b5bbeba7f11d6252959f4e6cd79baa53ed"},
+    {file = "xinference_client-0.15.2-py3-none-any.whl", hash = "sha256:b6275adab695e75e75a33e21e0ad212488fc2d5a4d0f693d544c0e78469abbe3"},
+]
+
+[package.dependencies]
+pydantic = "*"
+requests = "*"
+typing-extensions = "*"
+
+[package.extras]
+dev = ["black", "cython (>=0.29)", "flake8 (>=3.8.0)", "ipython (>=6.5.0)", "pytest (>=3.5.0)", "pytest-asyncio (>=0.14.0)", "pytest-cov (>=2.5.0)", "pytest-forked (>=1.0)", "pytest-mock (>=3.11.1)", "pytest-timeout (>=1.2.0)"]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun-pypi"
+
+[[package]]
 name = "xxhash"
 version = "3.5.0"
 description = "Python binding for xxHash"
@@ -2820,4 +2844,4 @@ reference = "aliyun-pypi"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "aab57ed64e191aa7e4f98823022aa80e58bb7c37a7007fd219b3a87b564a172d"
+content-hash = "8863d8f1bf112a21c28e29daa03223ac5d2975809b6f09d1bd3392097e5624d6"

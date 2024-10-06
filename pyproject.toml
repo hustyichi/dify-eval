@@ -16,6 +16,7 @@ pydantic = "^2.9.2"
 ragas = "^0.1.20"
 langchain_openai = "^0.1.0"
 loguru = "^0.7.2"
+xinference-client = "0.15.2"
 
 [[tool.poetry.source]]
 name = "aliyun-pypi"
