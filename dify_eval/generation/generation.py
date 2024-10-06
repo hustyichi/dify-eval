@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 from dotenv import load_dotenv
 from langfuse import Langfuse
+from langfuse.client import DatasetItemClient
 from loguru import logger
 
 from dify_eval.generation.dify_chat import send_chat_message
@@ -32,13 +33,22 @@ async def run_dataset_item(item, run_name, semaphore):
 
 
 def save_results(
-    results: list[dict], output_path: str = os.getenv("OUTPUT_FILE_PATH", "")
+    results: list[dict],
+    output_path: str = os.getenv("OUTPUT_FILE_PATH", ""),
+    dataset_items: list[DatasetItemClient] = None,
 ):
-    data = []
+    answer = []
     for result in results:
-        data.append(result["answer"].strip())
+        answer.append(result["answer"].strip())
 
-    df = pd.DataFrame(data, columns=["answer"])
+    questions = []
+    for item in dataset_items or []:
+        questions.append(item.input)
+
+    if questions:
+        df = pd.DataFrame({"question": questions, "answer": answer})
+    else:
+        df = pd.DataFrame(answer, columns=["answer"])
 
     if not output_path:
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -83,5 +93,5 @@ async def run_dataset_generation(
         tasks.append(task)
 
     results = await asyncio.gather(*tasks)
-    save_results(results, output_path)
+    save_results(results, output_path, items)
     return results
