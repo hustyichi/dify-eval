@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 from langfuse import Langfuse
 from langfuse.client import DatasetItemClient
 from loguru import logger
+from xinference_client import RESTfulClient
+
+client = RESTfulClient("http://localhost:9998")
+model = client.get_model("bge-large-zh-v1.5")
 
 from dify_eval.generation.dify_chat import send_chat_message
 
@@ -38,15 +42,29 @@ def save_results(
     dataset_items: list[DatasetItemClient] = None,
 ):
     answer = []
+    embeddings = []
     for result in results:
         answer.append(result["answer"].strip())
+        float_embedding = model.create_embedding("test embedding")["data"][0][
+            "embedding"
+        ]
+        embeddings.append(",".join(map(str, float_embedding)))
 
     questions = []
+    questions_ids = []
     for item in dataset_items or []:
         questions.append(item.input)
+        questions_ids.append(item.metadata)
 
     if questions:
-        df = pd.DataFrame({"question": questions, "answer": answer})
+        df = pd.DataFrame(
+            {
+                "ques_id": questions_ids,
+                "question": questions,
+                "answer": answer,
+                "embedding": embeddings,
+            }
+        )
     else:
         df = pd.DataFrame(answer, columns=["answer"])
 

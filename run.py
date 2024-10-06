@@ -5,7 +5,7 @@ from dify_eval.generation import generation
 
 if __name__ == "__main__":
     # upload local file to langfuse dataset
-    dataset.create_dataset_from_file()
+    dataset.create_dataset_from_file(metadata_column="ques_id")
 
     # run dify call by dataset
     loop = asyncio.new_event_loop()
