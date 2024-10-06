@@ -85,7 +85,7 @@ async def run_dataset_generation(
     # default items order is time desc
     items = dataset.items
     if time_asc_submit:
-        items = reversed(items)
+        items = list(reversed(items))
 
     for item in items:
         task = asyncio.create_task(run_dataset_item(item, run_name, semaphore))
