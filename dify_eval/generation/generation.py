@@ -57,6 +57,7 @@ async def run_dataset_generation(
     run_name: str = os.getenv("RUN_NAME", ""),
     max_concurrency: int = 1,
     output_path: str = os.getenv("OUTPUT_FILE_PATH", ""),
+    time_asc_submit: bool = True,
 ):
 
     if not dataset_name:
@@ -70,7 +71,13 @@ async def run_dataset_generation(
     semaphore = asyncio.Semaphore(max_concurrency)
     tasks = []
     input_data = []
-    for item in dataset.items:
+
+    # default items order is time desc
+    items = dataset.items
+    if time_asc_submit:
+        items = reversed(items)
+
+    for item in items:
         task = asyncio.create_task(run_dataset_item(item, run_name, semaphore))
         input_data.append(item.input)
         tasks.append(task)
