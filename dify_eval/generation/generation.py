@@ -55,7 +55,7 @@ def save_results(
 async def run_dataset_generation(
     dataset_name: str = os.getenv("DATASET_NAME", ""),
     run_name: str = os.getenv("RUN_NAME", ""),
-    max_concurrency: int = 3,
+    max_concurrency: int = 1,
     output_path: str = os.getenv("OUTPUT_FILE_PATH", ""),
 ):
 
