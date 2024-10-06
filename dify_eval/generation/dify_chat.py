@@ -3,6 +3,7 @@ from typing import Literal
 
 import aiohttp
 from dotenv import load_dotenv
+from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 load_dotenv()
@@ -39,7 +40,11 @@ async def send_chat_message(
             status = ret.get("status")
             message = ret.get("message")
             if status and message:
+                logger.exception(
+                    f"Request with {query} got error status {status} and message {message}"
+                )
                 raise ValueError(f"{status}: {message}")
             if ret.get("answer") == "":
+                logger.exception(f"Request with {query} got empty answer")
                 raise ValueError("Empty answer")
             return ret
