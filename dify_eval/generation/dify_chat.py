@@ -44,7 +44,11 @@ async def send_chat_message(
                     f"Request with {query} got error status {status} and message {message}"
                 )
                 raise ValueError(f"{status}: {message}")
-            if ret.get("answer") == "":
+            if (
+                ret.get("answer") == ""
+                and os.getenv("RAISE_ERROR_ON_EMPTY_RESULT", "false").strip().lower()
+                != "false"
+            ):
                 logger.exception(f"Request with {query} got empty answer")
                 raise ValueError("Empty answer")
             return ret
