@@ -80,22 +80,24 @@ def raw_ragas_evaluate(
 
 def do_trace_evaluate(
     metrics,
-    trace: TraceWithDetails,
+    trace_data: dict,
     ground_truth_map: dict = {},
 ):
     QUERY_KEY = "sys.query"
     ANSWER_KEY = "answer"
 
     logger.info(
-        f" >> Start evaluate trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)}"
+        f" >> Start evaluate trace {trace_data['id']} with {trace_data['input'].get(QUERY_KEY, trace_data['input'])}"
     )
-    knowledge_retrieval_observations = get_knowledge_retrieval_observations(trace.id)
+    knowledge_retrieval_observations = get_knowledge_retrieval_observations(
+        trace_data["id"]
+    )
     logger.debug(
-        f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} got {len(knowledge_retrieval_observations)} knowledge retrievals"
+        f"Trace {trace_data['id']} with {trace_data['input'].get(QUERY_KEY, trace_data['input'])} got {len(knowledge_retrieval_observations)} knowledge retrievals"
     )
     if not knowledge_retrieval_observations:
         logger.warning(
-            f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} has no knowledge retrievals, skip evaluation"
+            f"Trace {trace_data['id']} with {trace_data['input'].get(QUERY_KEY, trace_data['input'])} has no knowledge retrievals, skip evaluation"
         )
         return
 
@@ -104,28 +106,32 @@ def do_trace_evaluate(
         knowledge_retrieval_observations[-1]
     )
     logger.debug(
-        f"Trace {trace.id} got {len(trace_knowlege_retrieval_content)} contexts"
+        f"Trace {trace_data['id']} got {len(trace_knowlege_retrieval_content)} contexts"
     )
 
     data_sample = {
-        "question": [trace.input.get(QUERY_KEY, trace.input)],
-        "answer": [trace.output.get(ANSWER_KEY, trace.output)],
+        "question": [trace_data["input"].get(QUERY_KEY, trace_data["input"])],
+        "answer": [trace_data["output"].get(ANSWER_KEY, trace_data["output"])],
         "contexts": [trace_knowlege_retrieval_content],
         "ground_truth": [
-            ground_truth_map.get(trace.input.get(QUERY_KEY, trace.input), "")
+            ground_truth_map.get(
+                trace_data["input"].get(QUERY_KEY, trace_data["input"]), ""
+            )
         ],
     }
 
-    retrieval_metrics = [m for m in metrics if isinstance(m, str) and m in constants.RETRIEVAL_METRICS]
+    retrieval_metrics = [
+        m for m in metrics if isinstance(m, str) and m in constants.RETRIEVAL_METRICS
+    ]
     ragas_metrics = [m for m in metrics if isinstance(m, RagasMetric)]
     try:
         if ragas_metrics:
-            raw_ragas_evaluate(data_sample, ragas_metrics, trace.id)
+            raw_ragas_evaluate(data_sample, ragas_metrics, trace_data["id"])
         if retrieval_metrics:
-            retrieval_evaluate(data_sample, retrieval_metrics, trace.id)
+            retrieval_evaluate(data_sample, retrieval_metrics, trace_data["id"])
     except Exception as e:
         logger.exception(
-            f"Trace {trace.id} with {trace.input.get(QUERY_KEY, trace.input)} evaluate got error: {e}"
+            f"Trace {trace_data['id']} with {trace_data['input'].get(QUERY_KEY, trace_data['input'])} evaluate got error: {e}"
         )
 
 
@@ -143,9 +149,14 @@ def do_evaluate(
     )
 
     for trace in traces:
-        trace.input = json.loads(trace.input) if isinstance(trace.input, str) else trace.input
-        trace.output = json.loads(trace.output) if isinstance(trace.output, str) else trace.output
-        do_trace_evaluate(metrics, trace, ground_truth_map)
+        parsed_input = (
+            json.loads(trace.input) if isinstance(trace.input, str) else trace.input
+        )
+        parsed_output = (
+            json.loads(trace.output) if isinstance(trace.output, str) else trace.output
+        )
+        trace_data = {"id": trace.id, "input": parsed_input, "output": parsed_output}
+        do_trace_evaluate(metrics, trace_data, ground_truth_map)
 
     return len(traces)
 
