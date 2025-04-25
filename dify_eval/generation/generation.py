@@ -52,7 +52,9 @@ def save_results(
 
     if not output_path:
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_path = f'results/{os.getenv("RUN_NAME", "")}_{current_time}.csv'
+        local_path = f"results/{os.getenv('RUN_NAME', '')}_{current_time}.csv"
+    else:
+        local_path = output_path
 
     parent_folder = os.path.dirname(local_path)
     if not os.path.exists(parent_folder):
@@ -69,7 +71,6 @@ async def run_dataset_generation(
     output_path: str = os.getenv("OUTPUT_FILE_PATH", ""),
     time_asc_submit: bool = True,
 ):
-
     if not dataset_name:
         raise ValueError("No dataset name provided.")
 
