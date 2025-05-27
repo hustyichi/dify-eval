@@ -27,7 +27,7 @@
 
 #### 初始化 Dify 和 Langfuse
 1. 部署 Dify 和 Langfuse 应用， Dify 的部署可以参考 [Dify 文档](https://docs.dify.ai/v/zh-hans/getting-started/install-self-hosted/docker-compose)， Langfuse 的部署可以参考 [Langfuse 文档](https://langfuse.com/docs/deployment/local)。本框架理论上也支持 Dify 和 Langfuse 的云服务；
-2. 在 Dify 中创建应用，并配置 Langfuse 跟踪，具体可以参考 [Dify 集成 Langfuse](https://docs.dify.ai/v/zh-hans/guides/monitoring/integrate-external-ops-tools/integrate-langfuse);
+2. 在 Dify 中创建应用，并配置 Langfuse 跟踪，具体可以参考 [Dify 集成 Langfuse](https://docs.dify.ai/zh-hans/guides/monitoring/integrate-external-ops-tools/integrate-langfuse);
 
 #### 初始化 Dify-Eval
 
