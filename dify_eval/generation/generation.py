@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from langfuse import Langfuse
 from langfuse.client import DatasetItemClient
 from loguru import logger
+from tqdm.asyncio import tqdm
 
 from dify_eval.generation.dify_chat import send_chat_message
 
@@ -93,6 +94,6 @@ async def run_dataset_generation(
         input_data.append(item.input)
         tasks.append(task)
 
-    results = await asyncio.gather(*tasks)
+    results = await tqdm.gather(*tasks, desc="Processing items", total=len(tasks))
     save_results(results, output_path, items)
     return results
